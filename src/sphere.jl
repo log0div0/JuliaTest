@@ -3,7 +3,6 @@ struct Sphere
 	center::Vec3
 	radius::Float64
 	material::MaterialID
-	a::Int
 end
 
 function solve_quad_eq(a, b, c)
