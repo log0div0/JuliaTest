@@ -1,4 +1,4 @@
-module julia_test
+module JuliaTest
 
 using StaticArrays, Images, LinearAlgebra
 
