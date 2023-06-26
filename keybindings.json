@@ -1,0 +1,11 @@
+// Place your key bindings in this file to override the defaults
+[
+    {
+        "key": "ctrl+b",
+        "command": "workbench.action.terminal.sendSequence",
+        "when": "",
+        "args": {
+            "text": "m = include(\"src/JuliaTest.jl\")\nm.render(1,1)\n@time m.render(10,10)\n"
+        }
+    }
+]

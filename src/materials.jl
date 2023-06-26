@@ -17,6 +17,7 @@ reflect(v, n) = v - 2*v⋅n.*n
 
 struct Metal
 	albedo::Vec3
+	fuzz::Float64
 end
 
 function scatter(material::Metal, r::Ray, hit::HitRecord)

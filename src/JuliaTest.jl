@@ -15,4 +15,4 @@ include("scene.jl")
 
 export render
 
-end # module julia_test
+end # module JuliaTest
