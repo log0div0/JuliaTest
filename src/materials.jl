@@ -9,6 +9,14 @@ function random_unit_vector()::Vec3
 	normalize(Vec3(randn(), randn(), randn()))
 end
 
+# WGLMakie.scatter([random_unit_vector() for _ in 1:1000])
+
+function random_vector_in_unit_sphere()::Vec3
+	random_unit_vector() * ∛rand()
+end
+
+# WGLMakie.scatter([random_vector_in_unit_sphere() for _ in 1:1000])
+
 function scatter(material::Lambertian, r::Ray, hit::HitRecord)
 	material.albedo, hit.normal + random_unit_vector()
 end
