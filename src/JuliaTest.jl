@@ -1,6 +1,6 @@
 module JuliaTest
 
-using StaticArrays, Images, LinearAlgebra, WGLMakie
+using StaticArrays, Images, LinearAlgebra, WGLMakie, ProgressLogging
 
 const Vec3 = SVector{3, Float64}
 const Pixel = RGB{Float64}

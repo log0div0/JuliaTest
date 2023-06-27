@@ -30,7 +30,7 @@ function render(samples_per_pixel, max_depth)
 	cam = Camera(aspect_ratio)
 
 	# Threads.@threads for j in 1:image_height
-	for j in 1:image_height
+	@progress for j in 1:image_height
 		for i in 1:image_width
 			pixel = Vec3(0,0,0)
 			for _ in 1:samples_per_pixel
