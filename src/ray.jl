@@ -17,10 +17,10 @@ struct HitRecord
 	material::MaterialID
 end
 
-function trace_ray(r::Ray, t_min::Float64, t_max::Float64)::Union{HitRecord, Nothing}
+function trace_ray(objects, r::Ray, t_min::Float64, t_max::Float64)::Union{HitRecord, Nothing}
 	hit = nothing
 	closest_so_far = t_max
-	for obj in world
+	for obj in objects
 		obj_hit = find_intersection(obj, t_min, closest_so_far, r)
 		if !(obj_hit isa Nothing)
 			hit = obj_hit

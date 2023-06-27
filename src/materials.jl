@@ -29,7 +29,7 @@ struct Metal
 end
 
 function scatter(material::Metal, r::Ray, hit::HitRecord)
-	material.albedo, reflect(r.dir, hit.normal)
+	material.albedo, reflect(r.dir, hit.normal) + material.fuzz*random_vector_in_unit_sphere()
 end
 
 const Material = Union{Lambertian, Metal}

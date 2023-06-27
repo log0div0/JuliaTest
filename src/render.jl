@@ -1,10 +1,10 @@
 
-function ray_color(r::Ray, depth::Integer)::Vec3
+function ray_color(objects::Vector{Sphere}, materials::Vector{Material}, r::Ray, depth::Integer)::Vec3
 	if depth == 0
 		return Vec3(0,0,0)
 	end
 
-	hit = trace_ray(r, 0.0001, Inf)
+	hit = trace_ray(objects, r, 0.0001, Inf)
 
 	if hit isa Nothing
 		return sky_color(r)
@@ -16,10 +16,10 @@ function ray_color(r::Ray, depth::Integer)::Vec3
 
 	material = materials[hit.material]
 	attenuation, scattered_dir = scatter(material, r, hit)
-	return attenuation.*ray_color(Ray(hit.p, scattered_dir), depth-1)
+	return attenuation.*ray_color(objects, materials, Ray(hit.p, scattered_dir), depth-1)
 end
 
-function render(samples_per_pixel, max_depth)
+function render(objects::Vector{Sphere}, materials::Vector{Material};samples_per_pixel, max_depth)
 
 	aspect_ratio = 16 / 9
 	image_width = 680
@@ -37,7 +37,7 @@ function render(samples_per_pixel, max_depth)
 				u = (i + rand()) / (image_width-1)
 				v = (j + rand()) / (image_height-1)
 				ray = get_ray(cam, u, v)
-				pixel += ray_color(ray, max_depth)
+				pixel += ray_color(objects, materials, ray, max_depth)
 			end
 			img[image_height-j+1, i] = Pixel(sqrt.(pixel / samples_per_pixel)...)
 		end
