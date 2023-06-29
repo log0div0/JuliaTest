@@ -100,19 +100,20 @@ md"""
 # ╔═╡ edc11f05-8d87-45f4-876b-a47c85ccdfa4
 function refract(R, n, η::Float64, η′::Float64)
 	cosθ = min(-R⋅n, 1.0)
+	sinθ = √(1.0 - cosθ^2)
 	R⊥ = (η/η′)*(R + cosθ*n)
-	Rǁ = -√(abs(1.0 - R⊥⋅R⊥)) * n
+	Rǁ = -√(1.0 - R⊥⋅R⊥) * n
 	R⊥ + Rǁ
 end
 
 # ╔═╡ 7df9342a-8513-40d3-8e8c-82ee625cb1b8
-@bind test_angle Slider(0:90, default=45)
+angle_slider = @bind test_angle Slider(0:90, default=45)
 
 # ╔═╡ 14a85c6e-6071-4b42-ae5d-fe6dd6e7bf01
 test_angle
 
-# ╔═╡ 06181014-9cd4-4f9c-840e-b3ba03a913b3
-@bind test_eta Slider(1.0:0.1:10.0, default=1.5)
+# ╔═╡ 1483fa55-6a8b-4b69-9dc4-c3682175cb2b
+eta_slider = @bind test_eta Slider(1.0:0.1:10.0, default=1.5)
 
 # ╔═╡ 681815c4-9ac6-4971-8d7c-70d645468a04
 test_eta
@@ -131,6 +132,26 @@ begin
 	Plots.plot([(0, 0), Tuple(-R)], label="R", aspect_ratio=1, lims=(-1, 1))
 	Plots.plot!([(0, 0), Tuple(R′)], label="R′")
 	Plots.plot!([(0, 0), Tuple(Rcalc)], label="Rcalc")
+end
+
+# ╔═╡ 15ac71a3-7d55-48a4-afbd-6556e4dbe86d
+md"## Schlick Approximation"
+
+# ╔═╡ 0efc9f59-0224-4f66-ad32-5aa9693cb4a3
+function schlick_reflecrance(cosθ, η, η′)
+	r = (1-η/η′) / (1+η/η′)
+	r^2 + (1-r^2)*(1-cosθ)^5
+end
+
+# ╔═╡ a2777626-78ae-4919-b2d0-509614bccb0b
+eta_slider
+
+# ╔═╡ 82e1e80f-4484-47f6-852f-366eeb7a01c8
+test_eta
+
+# ╔═╡ 0a654c12-e7e8-4864-b93b-aae08c6f88bc
+begin
+	Plots.plot(0:90, x -> schlick_reflecrance(cos(deg2rad(x)), η, η′), ylimits=(0,1))
 end
 
 # ╔═╡ 818ec67e-b631-414b-9ac1-26a353d5e846
@@ -291,9 +312,6 @@ struct Metal
 	fuzz::Float64
 end
 
-# ╔═╡ d22251b3-20ea-443f-8010-3c4e472333b5
-const Material = Union{Lambertian, Metal}
-
 # ╔═╡ 1be43888-10fd-470d-b942-70bc1a054678
 reflect(v, n) = v - 2*v⋅n.*n
 
@@ -307,6 +325,33 @@ end
 # ╔═╡ 3c98e472-15d7-46bd-9ae6-394c581cc96a
 get_attenuation(material::Metal, r::Ray, hit::HitRecord) = material.albedo
 
+# ╔═╡ ec5b8200-dd6b-49ad-9312-defc7ed69a24
+md"### Dielectric"
+
+# ╔═╡ b890841b-0a27-4f23-bf37-7e038fdd3a59
+struct Dielectric
+	η::Float64
+end
+
+# ╔═╡ d22251b3-20ea-443f-8010-3c4e472333b5
+const Material = Union{Lambertian, Metal, Dielectric}
+
+# ╔═╡ c1a5af62-51c3-46ed-8ff2-a13acff67d34
+function get_scattered_dir(material::Dielectric, r::Ray, hit::HitRecord)
+	η, η′ = hit.front_face ? (1.0, material.η) : (material.η, 1.0)
+	cosθ = min(-r.dir⋅hit.normal, 1.0)
+	sinθ = √(1.0 - cosθ^2)
+	cannot_refract = (η/η′)*sinθ > 1.0
+	if cannot_refract || schlick_reflecrance(cosθ, η, η′) > rand()
+		reflect(r.dir, hit.normal)
+	else
+		refract(r.dir, hit.normal, η, η′)
+	end
+end
+
+# ╔═╡ 44edc978-1716-4b04-b3a8-cf1dd5cb08e9
+get_attenuation(material::Dielectric, r::Ray, hit::HitRecord) = Vec3(1,1,1)
+
 # ╔═╡ 5c32f2e7-ec7e-4188-b3c1-5ccf5f6d84e9
 md"# Scene"
 
@@ -314,9 +359,9 @@ md"# Scene"
 begin
 	const materials = Material[]
 	const material_ground = length(push!(materials, Lambertian(Vec3(0.8, 0.8, 0.0))))
-	const material_center = length(push!(materials, Lambertian(Vec3(0.7, 0.3, 0.3))))
-	const material_left   = length(push!(materials, Metal(Vec3(0.8, 0.8, 0.8), 0.3)))
-	const material_right  = length(push!(materials, Metal(Vec3(0.8, 0.6, 0.2), 1.0)))
+	const material_center = length(push!(materials, Lambertian(Vec3(0.1, 0.2, 0.5))))
+	const material_left   = length(push!(materials, Dielectric(1.5)))
+	const material_right  = length(push!(materials, Metal(Vec3(0.8, 0.6, 0.2), 0.0)))
 	materials
 end
 
@@ -325,6 +370,7 @@ const world = Sphere[
 	Sphere(Vec3( 0.0, -100.5, -1.0), 100.0, material_ground),
 	Sphere(Vec3( 0.0,    0.0, -1.0),   0.5, material_center),
 	Sphere(Vec3(-1.0,    0.0, -1.0),   0.5, material_left),
+	Sphere(Vec3(-1.0,    0.0, -1.0),  -0.4, material_left),
 	Sphere(Vec3( 1.0,    0.0, -1.0),   0.5, material_right),
 ]
 
@@ -2112,11 +2158,16 @@ version = "1.4.1+0"
 # ╟─080a4267-b8d6-47f9-8046-f04d71cdbc15
 # ╟─bea114ec-3ca0-429c-964a-f9b2a88c8688
 # ╠═edc11f05-8d87-45f4-876b-a47c85ccdfa4
-# ╠═7df9342a-8513-40d3-8e8c-82ee625cb1b8
-# ╠═14a85c6e-6071-4b42-ae5d-fe6dd6e7bf01
-# ╠═06181014-9cd4-4f9c-840e-b3ba03a913b3
-# ╠═681815c4-9ac6-4971-8d7c-70d645468a04
+# ╟─7df9342a-8513-40d3-8e8c-82ee625cb1b8
+# ╟─14a85c6e-6071-4b42-ae5d-fe6dd6e7bf01
+# ╟─1483fa55-6a8b-4b69-9dc4-c3682175cb2b
+# ╟─681815c4-9ac6-4971-8d7c-70d645468a04
 # ╠═a03026b8-1614-4ee1-bb80-9b99641353c4
+# ╟─15ac71a3-7d55-48a4-afbd-6556e4dbe86d
+# ╠═0efc9f59-0224-4f66-ad32-5aa9693cb4a3
+# ╠═a2777626-78ae-4919-b2d0-509614bccb0b
+# ╠═82e1e80f-4484-47f6-852f-366eeb7a01c8
+# ╠═0a654c12-e7e8-4864-b93b-aae08c6f88bc
 # ╟─818ec67e-b631-414b-9ac1-26a353d5e846
 # ╠═9bf6839e-23b5-404c-bd38-faef31676c54
 # ╠═c1141f94-1e24-4dc7-9b78-91b8a1ffd38e
@@ -2145,6 +2196,10 @@ version = "1.4.1+0"
 # ╠═1be43888-10fd-470d-b942-70bc1a054678
 # ╠═f9c45116-742f-4252-b5e2-0a45f68f5de6
 # ╠═3c98e472-15d7-46bd-9ae6-394c581cc96a
+# ╟─ec5b8200-dd6b-49ad-9312-defc7ed69a24
+# ╠═b890841b-0a27-4f23-bf37-7e038fdd3a59
+# ╠═c1a5af62-51c3-46ed-8ff2-a13acff67d34
+# ╠═44edc978-1716-4b04-b3a8-cf1dd5cb08e9
 # ╟─5c32f2e7-ec7e-4188-b3c1-5ccf5f6d84e9
 # ╠═e8fb61dd-1483-4e9d-a7ad-bb1ed565f3a4
 # ╠═0c5e1be6-ad90-4336-8e27-cd3a9968a80e
