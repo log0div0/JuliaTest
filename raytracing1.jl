@@ -107,16 +107,10 @@ function refract(R, n, η::Float64, η′::Float64)
 end
 
 # ╔═╡ 7df9342a-8513-40d3-8e8c-82ee625cb1b8
-angle_slider = @bind test_angle Slider(0:90, default=45)
-
-# ╔═╡ 14a85c6e-6071-4b42-ae5d-fe6dd6e7bf01
-test_angle
+test_angle_ = @bind test_angle Slider(0:90, default=45, show_value=true)
 
 # ╔═╡ 1483fa55-6a8b-4b69-9dc4-c3682175cb2b
-eta_slider = @bind test_eta Slider(1.0:0.1:10.0, default=1.5)
-
-# ╔═╡ 681815c4-9ac6-4971-8d7c-70d645468a04
-test_eta
+test_eta_ = @bind test_eta Slider(1.0:0.1:10.0, default=1.5, show_value=true)
 
 # ╔═╡ a03026b8-1614-4ee1-bb80-9b99641353c4
 begin
@@ -144,10 +138,7 @@ function schlick_reflecrance(cosθ, η, η′)
 end
 
 # ╔═╡ a2777626-78ae-4919-b2d0-509614bccb0b
-eta_slider
-
-# ╔═╡ 82e1e80f-4484-47f6-852f-366eeb7a01c8
-test_eta
+test_eta_
 
 # ╔═╡ 0a654c12-e7e8-4864-b93b-aae08c6f88bc
 begin
@@ -443,17 +434,11 @@ end
 # ╔═╡ c60cc71a-5bab-4659-b7d5-b86058a21d80
 md"# Output"
 
-# ╔═╡ 27d809a1-e87a-4f09-89ac-5b1b1845d659
-@bind samples_per_pixel Slider(1:100, default=20)
+# ╔═╡ 51a34626-cec3-40e2-8f95-485ef51c719f
+samples_per_pixel_ = @bind samples_per_pixel Slider(1:100, default=20, show_value=true)
 
-# ╔═╡ 8808657d-3422-42da-9e69-3cbef7a9e17b
-samples_per_pixel
-
-# ╔═╡ 41f3d59b-1f79-478b-8daf-77e4bb959264
-@bind max_depth Slider(1:50, default=10)
-
-# ╔═╡ 17a61e7f-1412-4f9a-b5dc-1e53f9d25033
-max_depth
+# ╔═╡ a0152266-236a-41ab-a05c-29af8ce30c26
+max_depth_ = @bind max_depth Slider(1:50, default=10, show_value=true)
 
 # ╔═╡ 5b7d7466-0718-4ab1-ae53-a55a893ac95f
 @time main(samples_per_pixel, max_depth)
@@ -2158,15 +2143,12 @@ version = "1.4.1+0"
 # ╟─080a4267-b8d6-47f9-8046-f04d71cdbc15
 # ╟─bea114ec-3ca0-429c-964a-f9b2a88c8688
 # ╠═edc11f05-8d87-45f4-876b-a47c85ccdfa4
-# ╟─7df9342a-8513-40d3-8e8c-82ee625cb1b8
-# ╟─14a85c6e-6071-4b42-ae5d-fe6dd6e7bf01
+# ╠═7df9342a-8513-40d3-8e8c-82ee625cb1b8
 # ╟─1483fa55-6a8b-4b69-9dc4-c3682175cb2b
-# ╟─681815c4-9ac6-4971-8d7c-70d645468a04
 # ╠═a03026b8-1614-4ee1-bb80-9b99641353c4
 # ╟─15ac71a3-7d55-48a4-afbd-6556e4dbe86d
 # ╠═0efc9f59-0224-4f66-ad32-5aa9693cb4a3
 # ╠═a2777626-78ae-4919-b2d0-509614bccb0b
-# ╠═82e1e80f-4484-47f6-852f-366eeb7a01c8
 # ╠═0a654c12-e7e8-4864-b93b-aae08c6f88bc
 # ╟─818ec67e-b631-414b-9ac1-26a353d5e846
 # ╠═9bf6839e-23b5-404c-bd38-faef31676c54
@@ -2204,10 +2186,8 @@ version = "1.4.1+0"
 # ╠═e8fb61dd-1483-4e9d-a7ad-bb1ed565f3a4
 # ╠═0c5e1be6-ad90-4336-8e27-cd3a9968a80e
 # ╟─c60cc71a-5bab-4659-b7d5-b86058a21d80
-# ╠═27d809a1-e87a-4f09-89ac-5b1b1845d659
-# ╠═8808657d-3422-42da-9e69-3cbef7a9e17b
-# ╠═41f3d59b-1f79-478b-8daf-77e4bb959264
-# ╠═17a61e7f-1412-4f9a-b5dc-1e53f9d25033
+# ╟─51a34626-cec3-40e2-8f95-485ef51c719f
+# ╟─a0152266-236a-41ab-a05c-29af8ce30c26
 # ╠═5b7d7466-0718-4ab1-ae53-a55a893ac95f
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
