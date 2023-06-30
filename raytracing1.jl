@@ -167,14 +167,25 @@ struct Camera
 	horizontal::Vec3
 	vertical::Vec3
 
-	function Camera(aspect_ratio::Float64)
+	function Camera(vfov::Real, aspect_ratio::Real)
+		lookfrom = Vec3(-2,2,1)
+		lookat = Vec3(0,0,-1)
+		vup = Vec3(0,1,0)
+
+		w = normalize(lookfrom - lookat)
+		u = normalize(vup × w)
+		v = w × u
+		
+		θ = deg2rad(vfov)
+		h = tan(θ/2)
+		
 		focal_length = 1.0
-		viewport_height = 2.0
+		viewport_height = 2.0 * h
 		viewport_width = aspect_ratio * viewport_height
-		horizontal = Vec3(viewport_width,0,0)
-		vertical = Vec3(0,viewport_height,0)
-		origin = Vec3(0,0,0)
-		lower_left_corner = origin - horizontal/2 - vertical/2 - Vec3(0,0,focal_length)
+		horizontal = viewport_width * u
+		vertical = viewport_height * v
+		origin = lookfrom
+		lower_left_corner = origin - horizontal/2 - vertical/2 - w
 		new(origin,lower_left_corner, horizontal, vertical)
 	end
 end
@@ -403,7 +414,7 @@ function ray_color(r::Ray, depth::Integer)::Vec3
 end
 
 # ╔═╡ 9fb3e73e-3d29-4094-9488-722875d1a54e
-function main(samples_per_pixel, max_depth)
+function main(samples_per_pixel, max_depth, vfov)
 
 	aspect_ratio = 16 / 9
 	image_width = 680
@@ -411,7 +422,7 @@ function main(samples_per_pixel, max_depth)
 
 	img = zeros(Pixel, image_height, image_width)
 
-	cam = Camera(aspect_ratio)
+	cam = Camera(vfov, aspect_ratio)
 
 	# Threads.@threads for j in 1:image_height
 	for j in 1:image_height
@@ -440,8 +451,11 @@ samples_per_pixel_ = @bind samples_per_pixel Slider(1:100, default=20, show_valu
 # ╔═╡ a0152266-236a-41ab-a05c-29af8ce30c26
 max_depth_ = @bind max_depth Slider(1:50, default=10, show_value=true)
 
+# ╔═╡ a2e3830d-6de8-4a0a-8494-7291ae981f24
+vfov_ = @bind vfov Slider(45:135, default=90, show_value=true)
+
 # ╔═╡ 5b7d7466-0718-4ab1-ae53-a55a893ac95f
-@time main(samples_per_pixel, max_depth)
+@time main(samples_per_pixel, max_depth, vfov)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2188,6 +2202,7 @@ version = "1.4.1+0"
 # ╟─c60cc71a-5bab-4659-b7d5-b86058a21d80
 # ╟─51a34626-cec3-40e2-8f95-485ef51c719f
 # ╟─a0152266-236a-41ab-a05c-29af8ce30c26
+# ╟─a2e3830d-6de8-4a0a-8494-7291ae981f24
 # ╠═5b7d7466-0718-4ab1-ae53-a55a893ac95f
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
